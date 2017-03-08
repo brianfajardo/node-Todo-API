@@ -8,39 +8,27 @@ const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 mongoose.connect('mongodb://localhost:27017/TodoApp');
 
-// Create mongoose model
-const Todo = mongoose.model('Todo', {
-    text: {
-        type: String
-    },
-    completed: {
-        type: Boolean
-    },
-    completedAt: {
-        type: Number
+/* 
+/ Create mongoose model
+/ The first argument is the singular name of the collection your model is for. 
+/ Mongoose automatically looks for the plural version of your model name. 
+*/
+const User = mongoose.model('User', {
+    email: {
+        type: String,
+        required: true,
+        trim: true,
+        minlength: 1
     }
 });
 
-const newTodo = new Todo({ /* use mongoose model constructor */
-    text: 'Buy vegetables'
+const user = new User({
+    email: 'example@mail.com  '
 });
 
-newTodo.save() /* returns a Promise */
+user.save()
     .then((doc) => {
-        console.log(`Saved todo: ${doc}`);
+        console.log('User saved', doc);
     }, (e) => {
-        console.log('Unable to save todo', e);
-    });
-
-const newTodo2 = new Todo({
-    text: 'Go for a walk',
-    completed: true,
-    completedAt: 123,
-});
-
-newTodo2.save()
-    .then((doc) => {
-        console.log(`Saved todo: ${doc}`);
-    }, (e) => {
-        console.log('Unable to save todo', e);
+        console.log('Unable to save user', e);
     });
