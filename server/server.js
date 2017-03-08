@@ -1,34 +1,31 @@
-const mongoose = require('mongoose');
+const express = require('express');
+const bodyParser = require('body-parser');
 
-/* 
-* Mongoose maintains connection over-time. 
-* Waits for connection before trying to make query. 
-* No need for micro-management of the order of things (like MongoDB)
-*/
-mongoose.Promise = global.Promise;
-mongoose.connect('mongodb://localhost:27017/TodoApp');
+const { mongoose } = require('./db/mongoose');
+const { Todo } = require('./models/todo');
+const { User } = require('./models/user');
 
-/* 
-/ Create mongoose model
-/ The first argument is the singular name of the collection your model is for. 
-/ Mongoose automatically looks for the plural version of your model name. 
-*/
-const User = mongoose.model('User', {
-    email: {
-        type: String,
-        required: true,
-        trim: true,
-        minlength: 1
-    }
-});
+const app = express();
 
-const user = new User({
-    email: 'example@mail.com  '
-});
+app.use(bodyParser.json());
 
-user.save()
-    .then((doc) => {
-        console.log('User saved', doc);
-    }, (e) => {
-        console.log('Unable to save user', e);
+app.post('/todos', (req, res) => {
+    // console.log(req.body); /* body is stored in bodyParser */
+    const todo = new Todo({
+        text: req.body.text
     });
+
+    todo.save()
+        .then((doc) => {
+            res.send(doc);
+            console.log('-- Doc sent through --')
+        }, (e) => {
+            res.status(400).send(e);
+        });
+});
+
+
+
+app.listen(3000, () => {
+    console.log('Started on localhost:3000');
+});
