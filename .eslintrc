@@ -1,3 +1,7 @@
 {
-    "extends": "rallycoding"
+    "extends": "rallycoding",
+    "env": {
+        "node": true,
+        "mocha": true,
+    }
 }
