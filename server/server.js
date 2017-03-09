@@ -9,7 +9,7 @@ const app = express();
 
 app.use(bodyParser.json());
 
-app.post('/todos', (req, res) => {
+app.post('/todos', (req, resp) => {
     // body is stored in bodyParser (req.body)
     const todo = new Todo({
         text: req.body.text
@@ -17,9 +17,20 @@ app.post('/todos', (req, res) => {
 
     todo.save()
         .then((doc) => {
-            res.send(doc); /* send doc back to the browser */
+            resp.send(doc); /* send doc back to the browser */
         }, (e) => {
-            res.status(400).send(e);
+            resp.status(400).send(e);
+        });
+});
+
+app.get('/todos', (req, resp) => {
+    Todo.find()
+        .then((todos) => {
+            // todos is an array
+            // To increase flexibility of useage (ie. add properties or methods) we can put the todos array in an object
+            resp.send({ todos });
+        }, (e) => {
+            resp.status(400).send(e);
         });
 });
 
