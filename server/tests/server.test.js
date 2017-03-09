@@ -1,5 +1,6 @@
 const request = require('supertest');
 const expect = require('expect');
+const { ObjectId } = require('mongodb');
 
 const { app } = require('./../server');
 const { Todo } = require('./../models/todo');
@@ -8,9 +9,11 @@ const { Todo } = require('./../models/todo');
 // SuperTest: request()
 
 const todos = [{
-    text: '1st test todo'
+    text: '1st test todo',
+    _id: new ObjectId()
 }, {
-    text: '2nd test todo'
+    text: '2nd test todo',
+    _id: new ObjectId()
 }];
 
 // Testing life-cycle: clears 'Todos' collection before each test case
@@ -80,6 +83,34 @@ describe('GET /todos', () => {
             .expect((resp) => {
                 expect(resp.body.todos.length).toBe(2);
             })
+            .end(done);
+    });
+});
+
+describe('GET /todos/:id', () => {
+    it('should return todo doc', (done) => {
+        request(app)
+            .get(`/todos/${todos[0]._id.toHexString()}`) /* template string to insert id of first todo and convert to String type */
+            .expect(200)
+            .expect((resp) => {
+                expect(resp.body.todo.text).toBe(todos[0].text);
+            })
+            .end(done);
+    });
+
+    it('should return 404 if todo not found', (done) => {
+        const hexID = new ObjectId().toHexString();
+
+        request(app)
+            .get(`/todos/${hexID}`)
+            .expect(404)
+            .end(done);
+    });
+
+    it('should return 404 for non-object ids', (done) => {
+        request(app)
+            .get('/todos/123')
+            .expect(404)
             .end(done);
     });
 });
