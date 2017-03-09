@@ -10,22 +10,23 @@ const app = express();
 app.use(bodyParser.json());
 
 app.post('/todos', (req, res) => {
-    // console.log(req.body); /* body is stored in bodyParser */
+    // body is stored in bodyParser (req.body)
     const todo = new Todo({
         text: req.body.text
     });
 
     todo.save()
         .then((doc) => {
-            res.send(doc);
-            console.log('-- Doc sent through --')
+            res.send(doc); /* send doc back to the browser */
         }, (e) => {
             res.status(400).send(e);
         });
 });
 
-
-
 app.listen(3000, () => {
     console.log('Started on localhost:3000');
 });
+
+module.exports = {
+    app
+};
