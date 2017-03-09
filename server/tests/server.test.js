@@ -7,10 +7,18 @@ const { Todo } = require('./../models/todo');
 // Mocha: beforeEach(), describe(), it()
 // SuperTest: request()
 
+const todos = [{
+    text: '1st test todo'
+}, {
+    text: '2nd test todo'
+}];
+
 // Testing life-cycle: clears 'Todos' collection before each test case
 // Assuming we start with 0 todos
 beforeEach((done) => {
     Todo.remove({})
+        // mongoDB fn, inserts multiply documents into a collection
+        .then(() => Todo.insertMany(todos))
         .then(() => done());
 });
 
@@ -32,7 +40,7 @@ describe('POST /todos', () => {
                 // Checking to see what was stored (below)
                 // Mongoose models and instances can communicate with the database (ie. querying, inserting, deleting, updating data)
                 // This allow us to use methods on the model like Todo.find() to query the database
-                Todo.find()
+                Todo.find({ text })
                     .then((todos) => {
                         expect(todos.length).toBe(1);
                         expect(todos[0].text).toBe(text);
@@ -56,10 +64,22 @@ describe('POST /todos', () => {
                 // Database check
                 Todo.find()
                     .then((todos) => {
-                        expect(todos.length).toBe(0);
+                        expect(todos.length).toBe(2);
                         done();
                     })
                     .catch((e) => done(e));
             });
+    });
+});
+
+describe('GET /todos', () => {
+    it('should get all todos', (done) => {
+        request(app)
+            .get('/todos')
+            .expect(200)
+            .expect((resp) => {
+                expect(resp.body.todos.length).toBe(2);
+            })
+            .end(done);
     });
 });
