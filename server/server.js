@@ -55,7 +55,7 @@ app.get('/todos/:id', (req, resp) => {
             resp.send({ todo });
         })
         .catch((e) => {
-            resp.status(400).send();
+            resp.status(400).send(e);
         });
 });
 
@@ -74,7 +74,7 @@ app.delete('/todos/:id', (req, resp) => {
             resp.status(200).send({ todo });
         })
         .catch((e) => {
-            resp.status(400).send();
+            resp.status(400).send(e);
         });
 });
 
@@ -107,7 +107,29 @@ app.patch('/todos/:id', (req, resp) => {
             resp.send({ todo });
         })
         .catch((e) => {
-            resp.status(400).send();
+            resp.status(400).send(e);
+        });
+});
+
+app.post('/users', (req, resp) => {
+    // _pick properties email and password from JSON req
+    const body = _.pick(req.body, ['email', 'password']);
+
+    // create new user, passing body 
+    const user = new User(body);
+
+    // save user to db
+    user.save()
+        .then(() => {
+            // Saving user and returning a generated token with auth access
+            return user.generateAuthToken();
+        })
+        .then((token) => {
+            // prefix header with x- is a custom header for specific purpose
+            resp.header('x-auth', token).send(user);
+        })
+        .catch((e) => {
+            resp.status(400).send(e);
         });
 });
 
