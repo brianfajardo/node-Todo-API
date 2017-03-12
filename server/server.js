@@ -30,7 +30,7 @@ app.get('/todos', (req, resp) => {
         .then((todos) => {
             // todos is an array
             // To increase flexibility of useage (ie. add properties or methods) we can put the todos array in an object
-            resp.send({ todos });
+            resp.send({ todos }); // ({ todos: todos })
         }, (e) => {
             resp.status(400).send(e);
         });
@@ -68,7 +68,7 @@ app.delete('/todos/:id', (req, resp) => {
             if (!todo) {
                 return resp.status(404).send();
             }
-            resp.status(200).send(todo);
+            resp.status(200).send({ todo });
         })
         .catch((e) => {
             resp.status(400).send();
