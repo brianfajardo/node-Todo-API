@@ -47,15 +47,37 @@ UserSchema.methods.toJSON = function () {
     return _.pick(userObject, ['_id', 'email']);
 };
 
+// Instance methods are called with the individual document
 UserSchema.methods.generateAuthToken = function () {
-    const user = this; /* user instance (don't have to deal with ES6 this issue) */
+    const user = this; /* user instance (don't have to deal with ES6 `this` issue) */
     const access = 'auth';
     const token = jwt.sign({ _id: user._id.toHexString(), access }, 'secret').toString();
 
     user.tokens.push({ access, token });
 
-    // Setting return so that server.js can chain methods
+    // Setting return so that server.js can chain methods in Promise when called
     return user.save().then(() => token);
+};
+
+// Model methods are called with the model with the `this` binding
+UserSchema.statics.findByToken = function (token) {
+    const User = this;
+    let decoded; /* using let (vs. const) to declare */
+
+    // Use try and catch to see if token was manipulated
+    try {
+        decoded = jwt.verify(token, 'secret');
+    } catch (e) {
+        // return a new Promise and reject it
+        // findByToken success case (.then()) is never initiated, follows this new Promise path
+        return Promise.reject();
+    }
+
+    return User.findOne({
+        _id: decoded._id,
+        'tokens.token': token, /* querying nested property */
+        'tokens.access': 'auth'
+    });
 };
 
 const User = mongoose.model('User', UserSchema);

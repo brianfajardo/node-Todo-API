@@ -8,6 +8,7 @@ const _ = require('lodash');
 const { mongoose } = require('./db/mongoose');
 const { Todo } = require('./models/todo');
 const { User } = require('./models/user');
+const { authenticate } = require('./middleware/authenticate');
 
 const app = express();
 const port = process.env.PORT;
@@ -122,7 +123,7 @@ app.post('/users', (req, resp) => {
     user.save()
         .then(() => {
             // Saving user and returning a generated token with auth access
-            return user.generateAuthToken();
+            return user.generateAuthToken(); /* this passes generated token */
         })
         .then((token) => {
             // prefix header with x- is a custom header for specific purpose
@@ -131,6 +132,10 @@ app.post('/users', (req, resp) => {
         .catch((e) => {
             resp.status(400).send(e);
         });
+});
+
+app.get('/users/me', authenticate, (req, resp) => {
+    resp.send(req.user);
 });
 
 app.listen(port, () => {
