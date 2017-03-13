@@ -138,6 +138,22 @@ app.get('/users/me', authenticate, (req, resp) => {
     resp.send(req.user);
 });
 
+app.post('/users/login', (req, resp) => {
+    const body = _.pick(req.body, ['email', 'password']);
+
+    User.findByCredentials(body.email, body.password)
+        .then((user) => {
+            return user.generateAuthToken()
+                .then((token) => {
+                    resp.header('x-auth', token) /* after login, generate new token and send it back to user*/
+                        .send(user);
+                });
+        })
+        .catch((e) => {
+            resp.status(400).send();
+        });
+});
+
 app.listen(port, () => {
     console.log(`Started up at port ${port}`);
 });
