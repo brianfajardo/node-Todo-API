@@ -154,6 +154,15 @@ app.post('/users/login', (req, resp) => {
         });
 });
 
+// authenticate carries req.user and req.token info
+app.delete('/users/me/token', authenticate, (req, resp) => {
+    req.user.removeToken(req.token).then(() => {
+        resp.status(200).send();
+    }, () => {
+        resp.status(400).send();
+    });
+});
+
 app.listen(port, () => {
     console.log(`Started up at port ${port}`);
 });

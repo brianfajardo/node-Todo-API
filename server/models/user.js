@@ -60,6 +60,17 @@ UserSchema.methods.generateAuthToken = function () {
     return user.save().then(() => token);
 };
 
+UserSchema.methods.removeToken = function (token) {
+    const user = this;
+
+    return user.update({
+        // $pull (mongoose operator) lets you remove an item from an array that matches criteria
+        $pull: {
+            tokens: { token } /* token: {token:token} */
+        }
+    });
+};
+
 // Model methods are called with the model with the `this` binding
 UserSchema.statics.findByToken = function (token) {
     const User = this;
