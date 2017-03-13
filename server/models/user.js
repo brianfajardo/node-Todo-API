@@ -65,6 +65,7 @@ UserSchema.methods.removeToken = function (token) {
 
     return user.update({
         // $pull (mongoose operator) lets you remove an item from an array that matches criteria
+        // note: removes the entire object containing the query including other properties or methods
         $pull: {
             tokens: { token } /* token: {token:token} */
         }
