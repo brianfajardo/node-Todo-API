@@ -15,10 +15,12 @@ const port = process.env.PORT;
 
 app.use(bodyParser.json());
 
-app.post('/todos', (req, resp) => {
+// Create
+app.post('/todos', authenticate, (req, resp) => {
     // body is stored in bodyParser (req.body)
     const todo = new Todo({
-        text: req.body.text
+        text: req.body.text,
+        _creator: req.user._id
     });
 
     todo.save()
@@ -29,8 +31,9 @@ app.post('/todos', (req, resp) => {
         });
 });
 
-app.get('/todos', (req, resp) => {
-    Todo.find()
+// Read
+app.get('/todos', authenticate, (req, resp) => {
+    Todo.find({ _creator: req.user._id })
         .then((todos) => {
             // todos is an array
             // To increase flexibility of useage (ie. add properties or methods) we can put the todos array in an object
@@ -41,14 +44,17 @@ app.get('/todos', (req, resp) => {
 });
 
 // req.params = "**/:PARAMS"
-app.get('/todos/:id', (req, resp) => {
+app.get('/todos/:id', authenticate, (req, resp) => {
     const id = req.params.id;
 
     if (!ObjectId.isValid(id)) {
         return resp.status(404).send();
     }
 
-    Todo.findById(id)
+    Todo.findOne({
+        _id: id,
+        _creator: req.user._id
+    })
         .then((todo) => {
             if (!todo) {
                 return resp.status(404).send();
@@ -60,14 +66,18 @@ app.get('/todos/:id', (req, resp) => {
         });
 });
 
-app.delete('/todos/:id', (req, resp) => {
+// Delete
+app.delete('/todos/:id', authenticate, (req, resp) => {
     const id = req.params.id;
 
     if (!ObjectId.isValid(id)) {
         return resp.status(404).send();
     }
 
-    Todo.findByIdAndRemove(id)
+    Todo.findOneAndRemove({
+        _id: id,
+        _creator: req.user._id
+    })
         .then((todo) => {
             if (!todo) {
                 return resp.status(404).send();
@@ -79,7 +89,8 @@ app.delete('/todos/:id', (req, resp) => {
         });
 });
 
-app.patch('/todos/:id', (req, resp) => {
+// Update
+app.patch('/todos/:id', authenticate, (req, resp) => {
     // updating object through PATCH raw JSON body
     const id = req.params.id;
     // _.pick() >>> Creates an object composed of the picked object properties.
@@ -100,7 +111,7 @@ app.patch('/todos/:id', (req, resp) => {
     }
     // mongoose's {new: true} similar to {returnOriginal: false} of MongoDB
     // set the id's properties to the new body with updated completedAt
-    Todo.findByIdAndUpdate(id, { $set: body }, { new: true })
+    Todo.findOneAndUpdate({_id: id,_creator: req.user._id}, { $set: body }, { new: true })
         .then((todo) => {
             if (!todo) {
                 return resp.status(404).send();
