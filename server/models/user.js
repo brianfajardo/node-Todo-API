@@ -52,7 +52,7 @@ UserSchema.methods.toJSON = function () {
 UserSchema.methods.generateAuthToken = function () {
     const user = this; /* user instance (don't have to deal with ES6 `this` issue) */
     const access = 'auth';
-    const token = jwt.sign({ _id: user._id.toHexString(), access }, 'secret').toString();
+    const token = jwt.sign({ _id: user._id.toHexString(), access }, process.env.JWT_SECRET).toString();
 
     user.tokens.push({ access, token });
 
@@ -79,7 +79,7 @@ UserSchema.statics.findByToken = function (token) {
 
     // Use try and catch to see if token was manipulated
     try {
-        decoded = jwt.verify(token, 'secret');
+        decoded = jwt.verify(token, process.env.JWT_SECRET);
     } catch (e) {
         // return a new Promise and reject it
         // findByToken success case (.then()) is never initiated, follows this new Promise path

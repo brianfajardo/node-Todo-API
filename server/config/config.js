@@ -1,12 +1,17 @@
+// MANAGING LOCAL SYSTEM ENVIRONMENTS
+
 // Dynamically setting the node environment
 // When working with Heroku, NODE_ENV is automatically set to 'production'
 const env = process.env.NODE_ENV || 'development';
 
-if (env === 'development') {
-    process.env.PORT = 3000;
-    process.env.MONGODB_URI = 'mongodb://localhost:27017/TodoApp';
-} else if (env === 'test') { /* package.json >>> scripts >>> tests sets env to test */
-    process.env.PORT = 3000;
-    // TodoAppTest is another database, won't overwrite development DB
-    process.env.MONGODB_URI = 'mongodb://localhost:27017/TodoAppTest';
-}
+// env is set to test in npm script
+if (env === 'development' || env === 'test') {
+    const config = require('./config.json');
+    const envConfig = config[env]; /* ex. config[development] */
+
+    Object.keys(envConfig).forEach((key) => {
+        process.env[key] = envConfig[key]
+        // ex. process.PORT = 3000
+        // ex. process.MONGODB_URI = "mongodb://localhost:27017/TodoApp"
+    });
+};
